@@ -61,8 +61,16 @@ TERM=dumb php -- "$MEDIAWIKI_DB_HOST" "$MEDIAWIKI_DB_USER" "$MEDIAWIKI_DB_PASSWO
 // database might not exist, so let's try creating it (just to be safe)
 
 list($host, $port) = explode(':', $argv[1], 2);
-$mysql = new mysqli($host, $argv[2], $argv[3], '', (int)$port);
-
+$i=0;
+do {
+    $mysql = new mysqli($host, $argv[2], $argv[3], '', (int)$port);
+    if ($mysql->connect_error && $i<5){
+        sleep(1);
+	$i++;
+    } elseif ($i>=5) {
+        break;
+    }
+} while ($mysql->connect_error);
 if ($mysql->connect_error) {
 	file_put_contents('php://stderr', 'MySQL Connection Error: (' . $mysql->connect_errno . ') ' . $mysql->connect_error . "\n");
 	exit(1);
